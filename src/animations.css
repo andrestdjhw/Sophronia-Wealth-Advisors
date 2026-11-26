@@ -1,0 +1,212 @@
+/* ════════════════════════════════════════════════════════════════
+   ANIMACIONES DEL SITIO
+   - Aparición al hacer scroll: clases .reveal (+ variantes) y .reveal-stagger
+   - Entrada del hero: .hero-stagger
+   - Efectos continuos: .ken-burns, .drift, .spin-slow
+   - Todo se desactiva con "reducir movimiento" del sistema.
+   La parte de JS está en src/animations.js
+═════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out-strong: cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+/* ─── Keyframes ─────────────────────────────────────────── */
+@keyframes sw-fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes sw-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes sw-ken-burns {
+  from { transform: scale(1.15); }
+  to   { transform: scale(1); }
+}
+@keyframes sw-drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-60px, 40px) scale(1.12); }
+  100% { transform: translate(30px, 80px) scale(0.95); }
+}
+@keyframes sw-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes sw-pulse-ring {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+@keyframes sw-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes sw-line-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ─── 1. Aparición al hacer scroll ───────────────────────────
+   .reveal            → sube y aparece
+   .reveal-left/right → entra desde un lado
+   .reveal-zoom       → crece ligeramente
+   .reveal-wipe       → la imagen se "descubre" de izquierda a derecha
+   .reveal-stagger    → sus hijos aparecen uno tras otro
+──────────────────────────────────────────────────────────────── */
+.reveal-ready .reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  /* Las 3 primeras son la aparición (con retraso escalonado);
+     las demás conservan los efectos hover de Tailwind sin retraso. */
+  --reveal-delay: calc(var(--i, 0) * 110ms);
+  transition:
+    opacity 0.9s var(--ease-out-soft) var(--reveal-delay),
+    transform 0.9s var(--ease-out-soft) var(--reveal-delay),
+    clip-path 1.2s var(--ease-in-out-strong) var(--reveal-delay),
+    translate 0.3s ease,
+    scale 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease;
+  will-change: opacity, transform;
+}
+.reveal-ready .reveal.reveal-left  { transform: translateX(-24px); }
+.reveal-ready .reveal.reveal-right { transform: translateX(24px); }
+@media (min-width: 768px) {
+  .reveal-ready .reveal.reveal-left  { transform: translateX(-48px); }
+  .reveal-ready .reveal.reveal-right { transform: translateX(48px); }
+}
+.reveal-ready .reveal.reveal-zoom  { transform: scale(0.92); }
+.reveal-ready .reveal.reveal-wipe {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(0 100% 0 0 round 1.5rem);
+}
+.reveal-ready .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+.reveal-ready .reveal.reveal-wipe.is-visible {
+  clip-path: inset(0 0 0 0 round 1.5rem);
+}
+
+/* Línea que se dibuja (pasos de "How it works") */
+.step-line { position: relative; }
+.step-line::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-gold-500), var(--color-ocean-500));
+  transform-origin: left;
+}
+.reveal-ready .step-line:not(.is-visible)::before { transform: scaleX(0); }
+.reveal-ready .step-line.is-visible::before {
+  animation: sw-line-grow 1s var(--ease-in-out-strong) both;
+  animation-delay: calc(var(--i, 0) * 110ms + 200ms);
+}
+
+/* ─── 2. Entrada del hero (al cargar la página) ──────────── */
+.hero-stagger > * {
+  animation: sw-fade-up 1s var(--ease-out-soft) both;
+}
+.hero-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+.hero-stagger > *:nth-child(2) { animation-delay: 0.25s; }
+.hero-stagger > *:nth-child(3) { animation-delay: 0.4s; }
+.hero-stagger > *:nth-child(4) { animation-delay: 0.55s; }
+.hero-stagger > *:nth-child(5) { animation-delay: 0.7s; }
+
+.fade-in-late {
+  animation: sw-fade-up 1.1s var(--ease-out-soft) 0.6s both;
+}
+
+/* ─── 3. Efectos continuos ───────────────────────────────── */
+.ken-burns { animation: sw-ken-burns 14s ease-out both; }
+.drift     { animation: sw-drift 22s ease-in-out infinite alternate; }
+.spin-slow { animation: sw-spin 70s linear infinite; }
+.float     { animation: sw-float 6s ease-in-out infinite; }
+
+/* Anillo pulsante (botón del chatbot) */
+.pulse-ring::before,
+.pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid var(--color-gold-500);
+  animation: sw-pulse-ring 2.4s ease-out infinite;
+  pointer-events: none;
+}
+.pulse-ring::after { animation-delay: 1.2s; }
+
+/* Cinta en movimiento (marquee) — dos pistas idénticas que se desplazan sin corte */
+@keyframes sw-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+.marquee-track { animation: sw-marquee var(--marquee-duration, 45s) linear infinite; }
+.marquee-reverse .marquee-track { animation-direction: reverse; } /* izquierda → derecha */
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+/* Barra de redes flotante (src/social-rail.js añade .is-shown) */
+.social-rail.is-shown {
+  opacity: 1;
+  --tw-translate-x: 0; /* solo el desplazamiento horizontal; el centrado vertical se mantiene */
+  pointer-events: auto;
+}
+.social-rail .social-rail-item {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.4s var(--ease-out-soft), transform 0.4s var(--ease-out-soft);
+}
+.social-rail.is-shown .social-rail-item {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(var(--i, 0) * 70ms + 150ms);
+}
+
+/* ─── 4. Micro-interacciones ─────────────────────────────── */
+/* Flecha que se adelanta al pasar el mouse por un enlace o botón */
+.icon-arrow-right { transition: translate 0.25s var(--ease-out-soft); }
+a:hover .icon-arrow-right,
+button:hover .icon-arrow-right { translate: 4px 0; }
+
+/* Contenido de preguntas frecuentes al abrir */
+details[open] > :not(summary) {
+  animation: sw-fade-up 0.45s var(--ease-out-soft) both;
+}
+.faq-icon { transition: transform 0.3s var(--ease-out-soft), background-color 0.2s; }
+
+/* Mensajes del chatbot */
+.chat-in { animation: sw-fade-up 0.4s var(--ease-out-soft) both; }
+
+/* ─── Accesibilidad: reducir movimiento ──────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal-ready .reveal,
+  .reveal-ready .reveal.reveal-wipe {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+    transition: none;
+  }
+  .reveal-ready .step-line::before { transform: none; animation: none; }
+  .hero-stagger > *,
+  .fade-in-late,
+  .ken-burns,
+  .drift,
+  .spin-slow,
+  .float,
+  .chat-in,
+  details[open] > :not(summary),
+  .pulse-ring::before,
+  .pulse-ring::after,
+  .marquee-track {
+    animation: none !important;
+  }
+  .social-rail .social-rail-item { opacity: 1; transform: none; transition: none; }
+  .marquee-track[aria-hidden="true"],
+  .marquee-dup { display: none; }
+  .marquee-track { flex-wrap: wrap; justify-content: center; width: 100%; }
+  .btn-gold::after { display: none; }
+}

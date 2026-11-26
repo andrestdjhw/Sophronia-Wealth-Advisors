@@ -1,17 +1,26 @@
 <?php
+/**
+ * Entrada individual del blog
+ */
+get_header();
 
-get_header(); ?>
-
-<div class="max-w-4xl mx-auto px-4 prose">
-  <?php if (have_posts()) {
-    while(have_posts()) {
-      the_post(); ?>
-      <div>
-        <h1><?php the_title(); ?></h1>
+while (have_posts()) {
+  the_post();
+  get_template_part('template-parts/page-hero', null, array(
+    'eyebrow'  => get_the_date(),
+    'title'    => esc_html(get_the_title()),
+  ));
+  ?>
+  <article class="section">
+    <div class="container-site">
+      <?php if (has_post_thumbnail()) : ?>
+        <div class="mx-auto mb-12 max-w-4xl overflow-hidden rounded-3xl"><?php the_post_thumbnail('large', array('class' => 'w-full h-auto')); ?></div>
+      <?php endif; ?>
+      <div class="prose prose-lg mx-auto prose-headings:font-serif prose-a:text-gold-700">
         <?php the_content(); ?>
       </div>
-    <?php }
-  } ?>
-</div>
+    </div>
+  </article>
+<?php }
 
-<?php get_footer();
+get_footer();
